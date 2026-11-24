@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
+import '../services/storage.dart' show bestWritableAppDir;
 import 'update_core.dart';
 
 /// In-app updater state machine: check GitHub for a newer release,
@@ -336,8 +336,10 @@ class UpdateController extends Notifier<UpdateState> {
   }
 
   Future<File> _download(UpdateInfo info) async {
-    final tmp = await getTemporaryDirectory();
-    final dir = Directory('${tmp.path}/update');
+    // Not path_provider: its JNI layer is broken on some phones (see
+    // FilePackageStorage). The APK is deleted before every new download.
+    final base = await bestWritableAppDir();
+    final dir = Directory('${base.path}/update');
     if (await dir.exists()) {
       await dir.delete(recursive: true); // old APKs: free the space
     }

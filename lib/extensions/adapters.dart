@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 import '../services/storage.dart';
 import 'core/host.dart';
@@ -131,10 +130,16 @@ class HiveKeyValueStore implements KeyValueStore {
   }
 }
 
-/// Packages live in `<app support>/extensions/`, private to the app.
+/// Packages live in `<app data dir>/extensions/`, private to the app.
+///
+/// The base directory comes from [bestWritableAppDir] (direct app-data
+/// paths first) and NOT from path_provider: on some phones the whole
+/// path_provider layer is broken (JNI `ClassNotFoundException` for
+/// `android.content.Context`), which is exactly what made every extension
+/// install fail right after the download.
 class FilePackageStorage implements PackageStorage {
   FilePackageStorage({Future<Directory> Function()? baseDir})
-      : _baseDir = baseDir ?? getApplicationSupportDirectory;
+      : _baseDir = baseDir ?? bestWritableAppDir;
 
   final Future<Directory> Function() _baseDir;
 

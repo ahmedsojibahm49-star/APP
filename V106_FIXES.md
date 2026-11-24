@@ -133,3 +133,18 @@ uses a Bold icon or a decorative one.
   many plugins never finish: it returns as soon as links arrive.
 * A plugin that hangs while starting times out after 60 s instead of
   freezing the install.
+
+## Second field test
+
+* **Install failed right after the download** with
+  `ClassNotFoundException: Didn't find class "Landroid/content/Context;"`
+  (a `JThrowable`). That is not the extension: it is the phone's
+  `path_provider` JNI layer being broken (the same failure v1.0.2 had at
+  start-up, which `storage.dart` already works around with direct app-data
+  paths). The extension store and the in-app updater both asked
+  `path_provider` for a folder. They now use `bestWritableAppDir()` like the
+  rest of the app, so neither touches JNI any more.
+* **Details had no usable back button.** The implicit AppBar arrow could not
+  be seen over artwork, and did nothing when Details was the only route.
+  Details now has an explicit round back button (dark backing, white linear
+  icon) that pops, or goes Home when there is nothing to pop to.

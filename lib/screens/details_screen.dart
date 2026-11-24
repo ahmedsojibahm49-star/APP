@@ -33,7 +33,10 @@ class DetailsScreen extends ConsumerWidget {
     final item = ref.watch(itemByIdProvider(itemId));
     if (item == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: _backButton(context),
+        ),
         body: EmptyState(
           title: tr(context, 'details.notFoundTitle'),
           body: tr(context, 'details.notFoundBody'),
@@ -75,6 +78,12 @@ class DetailsScreen extends ConsumerWidget {
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
+            // Explicit, always-visible back button over the artwork. The
+            // implicit one is easy to lose against a poster, and it does
+            // nothing when Details is the only route (deep link / restore).
+            automaticallyImplyLeading: false,
+            leadingWidth: 64,
+            leading: _backButton(context),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -530,6 +539,44 @@ class DetailsScreen extends ConsumerWidget {
             icon,
             size: size * 0.42,
             color: active ? AppColors.brand : palette.text,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Leave Details: pop when there is somewhere to go back to, else Home.
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/');
+    }
+  }
+
+  /// Round, dark-backed back button that stays readable on any artwork.
+  Widget _backButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Center(
+        child: Tooltip(
+          message: tr(context, 'common.back'),
+          child: Material(
+            color: Colors.black.withValues(alpha: 0.45),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => _goBack(context),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Iconsax.arrow_left_copy,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ),
         ),
       ),
