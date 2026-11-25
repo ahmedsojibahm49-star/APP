@@ -203,6 +203,7 @@ final liveSearchItemsProvider = FutureProvider.autoDispose
   final q = query.trim();
   if (q.length < 2) return const <ProviderItem>[];
   final manager = ref.read(extensionManagerProvider);
+  await manager.ensureEnabledLoaded();
   if (manager.activeProviders().isEmpty) return const <ProviderItem>[];
 
   final cancel = SearchCancel();
@@ -228,6 +229,7 @@ final liveHomeProvider = FutureProvider<List<LiveRail>>(
     retry: (_, _) => null, (ref) async {
   ref.watch(activeProviderKeysProvider);
   final manager = ref.read(extensionManagerProvider);
+  await manager.ensureEnabledLoaded();
   if (manager.activeProviders().isEmpty) return const <LiveRail>[];
   final sections = await ref.read(liveProviderManagerProvider).home();
   final catalog = ref.read(liveCatalogProvider);

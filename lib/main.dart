@@ -194,6 +194,9 @@ class StreamBoxApp extends ConsumerWidget {
       );
     }
     final router = ref.watch(appRouterProvider);
+    // Bring installed extensions back up as soon as the app is up (not
+    // only when the first tab opens). Idempotent, never throws.
+    ref.read(extensionBootProvider);
     return MaterialApp.router(
       title: 'StreamBox',
       routerConfig: router,

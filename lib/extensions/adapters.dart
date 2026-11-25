@@ -94,7 +94,7 @@ class HttpExtensionFetcher implements ExtensionFetcher {
 
 /// Hive-backed string store (`extensions` box). Falls back to memory when
 /// the box is not open so a screen can never crash on it.
-class HiveKeyValueStore implements KeyValueStore {
+class HiveKeyValueStore implements KeyValueStore, PersistenceInfo {
   HiveKeyValueStore()
       : _box = Hive.isBoxOpen(BoxNames.extensions)
             ? Hive.box<String>(BoxNames.extensions)
@@ -102,6 +102,9 @@ class HiveKeyValueStore implements KeyValueStore {
 
   final Box<String>? _box;
   final Map<String, String> _memory = {};
+
+  @override
+  bool get isPersistent => _box != null;
 
   @override
   String? read(String key) {

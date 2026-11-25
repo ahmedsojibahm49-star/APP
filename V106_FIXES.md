@@ -148,3 +148,29 @@ uses a Bold icon or a decorative one.
   be seen over artwork, and did nothing when Details was the only route.
   Details now has an explicit round back button (dark backing, white linear
   icon) that pops, or goes Home when there is nothing to pop to.
+
+## Third field test (plugins install and load; Home shows rows)
+
+* **Title pages failed** (`ClassNotFoundException: ...AniListApi$CoverImage`):
+  Anichi (and StreamPlay, TorraStream) put AniList data classes inside their
+  own response models; Jackson needs them while building those models. The
+  classes and the `SyncIdName` enum are now provided (property names and
+  `$stable` fields match the real ones, checked against CloudStream's
+  classes.jar). All 605 references the 87 Phisher plugins make into the shim
+  classes resolve except 3 (2 rare plugins).
+* **No posters / extension logos at all:** remote images went through
+  `cached_network_image`, whose disk cache calls `path_provider` — the same
+  broken JNI layer as the install bug — so every remote image silently showed
+  the placeholder. `AppImage` now uses Flutter's own network image, upgrades
+  `http://` and `//host` URLs, and sends a browser User-Agent and the image's
+  own origin as Referer (gets past simple hot-link rules).
+* **Built-in catalog off = empty Home:** Home now shows the extensions' rows
+  (with a spinner while they load) whenever any extension is on.
+* **Extensions gone after leaving the app:** start-up now runs with the app
+  (not with the first tab), retries a package that failed to start (2 s,
+  6 s), and Home/Search call `ensureEnabledLoaded()` before reading the
+  active providers, so an enabled extension is always brought back. The
+  store card shows “starting…” while that happens, and the self-check
+  reports whether state is on disk or in memory only.
+* Not available: manga/manhwa from extensions. CloudStream extensions are
+  video-only; manga/manhwa still come from JSON catalogs.

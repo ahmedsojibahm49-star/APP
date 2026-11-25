@@ -533,4 +533,5 @@ const Map<String, String> bnStrings = {
   'ext.diagnoseTitle': 'এক্সটেনশন সেলফ-চেক',
   'ext.copy': 'কপি',
   'ext.copied': 'কপি হয়েছে।',
+  'ext.state.starting': 'ইনস্টল করা · চালু হচ্ছে…',
 };

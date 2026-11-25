@@ -90,6 +90,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final profile =
         Hive.box<UserProfile>(BoxNames.profile).get('current');
 
+    // Built-in catalog switched off (or empty) but extensions are on: the
+    // Home feed is just their rows, not the "add a provider" empty state.
+    if (items.isEmpty && hasLive) {
+      final live = ref.watch(liveHomeProvider);
+      if (liveRails.isNotEmpty || live.isLoading) {
+        return Scaffold(
+          body: RefreshIndicator(
+            onRefresh: _refresh,
+            color: AppColors.brand,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                _header(context, profile?.name),
+                if (liveRails.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.sizeOf(context).height * 0.2,
+                    ),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                for (final rail in liveRails)
+                  _rail(
+                    context,
+                    title: rail.title,
+                    items: rail.items,
+                    subtitle: (item) =>
+                        liveSourceLabel(item) ?? typeLabel(context, item.type),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+
     if (items.isEmpty) {
       return Scaffold(
         body: RefreshIndicator(

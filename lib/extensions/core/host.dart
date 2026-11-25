@@ -68,6 +68,13 @@ abstract class ExtensionFetcher {
 
 // --------------------------------------------------------------- storage
 
+/// Optional capability of a [KeyValueStore]: says whether data survives an
+/// app restart (the self-check prints it, because an in-memory fallback
+/// would look fine until the app is closed).
+abstract interface class PersistenceInfo {
+  bool get isPersistent;
+}
+
 abstract class KeyValueStore {
   String? read(String key);
   Future<void> write(String key, String value);

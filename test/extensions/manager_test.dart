@@ -635,6 +635,45 @@ void main() {
           ['B']);
     });
 
+    test('startup retries a package that failed to start the first time',
+        () async {
+      final env = await installedEnv();
+      final flaky = _FlakyHost(failFirst: 1); // fails once, then works
+      final again = env.restart(newHost: flaky);
+      await again.load();
+      await again.restoreEnabledProviders(
+          retryDelays: const [Duration(milliseconds: 5)]);
+      expect(flaky.loadAttempts, 2);
+      expect(again.isLoadedInHost('Alpha'), isTrue);
+      expect(again.installedRecord('Alpha')!.lastError, isNull);
+    });
+
+    test('ensureEnabledLoaded starts a package that is enabled but idle',
+        () async {
+      final env = await installedEnv();
+      final host2 = FakeHost()
+        ..failLoadPaths.add(env.manager.installedRecord('Alpha')!.path);
+      final again = env.restart(newHost: host2);
+      await again.load();
+      await again.restoreEnabledProviders(retryDelays: const []);
+      expect(again.isLoadedInHost('Alpha'), isFalse);
+      // Time passes and the problem is gone.
+      host2.failLoadPaths.clear();
+      await again.ensureEnabledLoaded(minGap: Duration.zero);
+      expect(again.isLoadedInHost('Alpha'), isTrue);
+      expect(again.activeProviders(), hasLength(1));
+    });
+
+    test('ensureEnabledLoaded ignores disabled packages', () async {
+      final env = await installedEnv();
+      await env.manager.setEnabled('Alpha', false);
+      final host2 = FakeHost();
+      final again = env.restart(newHost: host2);
+      await again.load();
+      await again.ensureEnabledLoaded(minGap: Duration.zero);
+      expect(host2.loadCalls, isEmpty);
+    });
+
     test('missing package file at startup is reported, not fatal', () async {
       final env = await installedEnv();
       env.pkgs.files.clear();
@@ -769,4 +808,27 @@ class _ThrowingPackages extends MemoryPackages {
   @override
   Future<String> save(String fileName, Uint8List bytes) =>
       Future.error(StateError('disk full'));
+}
+
+/// Fails its first [failFirst] loads, then behaves.
+class _FlakyHost extends FakeHost {
+  _FlakyHost({required this.failFirst});
+  final int failFirst;
+  int loadAttempts = 0;
+
+  @override
+  Future<List<HostProvider>> load(
+      {required String internalName,
+      required String path,
+      required String pluginClassName}) {
+    loadAttempts++;
+    if (loadAttempts <= failFirst) {
+      return Future.error(const ExtensionException(
+          ExtensionError.initFailed, 'not warm yet'));
+    }
+    return super.load(
+        internalName: internalName,
+        path: path,
+        pluginClassName: pluginClassName);
+  }
 }

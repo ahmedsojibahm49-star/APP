@@ -406,20 +406,66 @@ class ExtensionManager {
   /// Load every enabled package into the host, [concurrency] at a time.
   /// A failing package is recorded (lastError) and skipped — it never
   /// blocks or crashes the others.
-  Future<void> restoreEnabledProviders({int concurrency = 2}) async {
+  Future<void> restoreEnabledProviders({
+    int concurrency = 2,
+    List<Duration> retryDelays = const [
+      Duration(seconds: 2),
+      Duration(seconds: 6),
+    ],
+  }) async {
     if (!_hostInfo.available) return;
-    final queue = _installed.values.where((r) => r.enabled).toList();
-    var next = 0;
-    Future<void> worker() async {
-      while (next < queue.length) {
-        final record = queue[next++];
-        await _loadIntoHost(record.internalName);
+    var pending = _installed.values
+        .where((r) => r.enabled)
+        .map((r) => r.internalName)
+        .toList();
+    for (var round = 0; pending.isNotEmpty; round++) {
+      var next = 0;
+      final batch = pending;
+      Future<void> worker() async {
+        while (next < batch.length) {
+          final name = batch[next++];
+          _lastLoadAttempt[name] = _clock().millisecondsSinceEpoch;
+          await _loadIntoHost(name);
+        }
       }
-    }
 
-    await Future.wait([
-      for (var i = 0; i < concurrency && i < queue.length; i++) worker(),
-    ]);
+      await Future.wait([
+        for (var i = 0; i < concurrency && i < batch.length; i++) worker(),
+      ]);
+      // A package that failed to start is retried a couple of times: the
+      // runtime is often not warm yet while the app is still starting.
+      pending = [
+        for (final name in batch)
+          if ((_installed[name]?.enabled ?? false) &&
+              !_loadedInHost.contains(name))
+            name,
+      ];
+      if (pending.isEmpty || round >= retryDelays.length) break;
+      await Future<void>.delayed(retryDelays[round]);
+    }
+  }
+
+  final Map<String, int> _lastLoadAttempt = {};
+
+  /// Cheap and idempotent: starts any package that is enabled but not
+  /// running (it failed at start-up, or the process was restarted), at most
+  /// once per [minGap] per package. Called before Home / Search read the
+  /// active providers so a restart never leaves them empty.
+  Future<void> ensureEnabledLoaded({
+    Duration minGap = const Duration(seconds: 20),
+  }) async {
+    if (!_hostInfo.available) return;
+    final now = _clock().millisecondsSinceEpoch;
+    for (final r in _installed.values.toList()) {
+      final name = r.internalName;
+      if (!r.enabled || _loadedInHost.contains(name) || _busy.contains(name)) {
+        continue;
+      }
+      final last = _lastLoadAttempt[name];
+      if (last != null && now - last < minGap.inMilliseconds) continue;
+      _lastLoadAttempt[name] = now;
+      await _loadIntoHost(name);
+    }
   }
 
   /// Returns true when the package is now loaded.
@@ -1011,6 +1057,14 @@ class ExtensionManager {
     b.writeln('== Native runtime ==');
     b.writeln(native);
     b.writeln();
+    final Object store = _store;
+    if (store is PersistenceInfo) {
+      b.writeln('== Storage ==');
+      b.writeln(store.isPersistent
+          ? 'on disk (survives restart)'
+          : 'MEMORY ONLY - everything is lost when the app closes');
+      b.writeln();
+    }
     b.writeln('== Host ==');
     b.writeln('available=${_hostInfo.available} runtime=${_hostInfo.runtime} '
         'apis=${_hostInfo.apiVersions.join(',')}');

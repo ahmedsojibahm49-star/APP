@@ -530,4 +530,5 @@ const Map<String, String> enStrings = {
   'ext.diagnoseTitle': 'Extension self-check',
   'ext.copy': 'Copy',
   'ext.copied': 'Copied.',
+  'ext.state.starting': 'Installed · starting…',
 };

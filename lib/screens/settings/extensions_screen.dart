@@ -410,7 +410,8 @@ class ExtensionCard extends ConsumerWidget {
       trailing = const SizedBox.shrink();
     }
 
-    final status = _statusText(context, progress);
+    final running = manager.isLoadedInHost(item.internalName);
+    final status = _statusText(context, progress, running);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -511,7 +512,8 @@ class ExtensionCard extends ConsumerWidget {
     );
   }
 
-  String _statusText(BuildContext context, InstallProgress? progress) {
+  String _statusText(
+      BuildContext context, InstallProgress? progress, bool running) {
     if (progress != null) {
       return switch (progress.phase) {
         InstallPhase.downloading => progress.fraction == null
@@ -531,6 +533,7 @@ class ExtensionCard extends ConsumerWidget {
         });
       }
       if (rec.lastError != null) return tr(context, 'ext.state.error');
+      if (item.isEnabled && !running) return tr(context, 'ext.state.starting');
       return item.isEnabled
           ? tr(context, 'ext.state.enabled')
           : tr(context, 'ext.state.disabled');
