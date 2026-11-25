@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'extensions/live_catalog.dart' show extensionBootProvider;
 import 'i18n/i18n.dart';
 import 'models/models.dart';
 import 'router/app_router.dart';
