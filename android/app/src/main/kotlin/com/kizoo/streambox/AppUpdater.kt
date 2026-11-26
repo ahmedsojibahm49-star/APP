@@ -47,6 +47,7 @@ class AppUpdater(
         try {
             when (call.method) {
                 "version" -> result.success(versionJson())
+                "cs3Status" -> result.success(MainActivity.cs3Status)
                 "openInstallSettings" -> {
                     openInstallSettings()
                     result.success(true)

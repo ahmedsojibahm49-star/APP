@@ -534,4 +534,7 @@ const Map<String, String> bnStrings = {
   'ext.copy': 'কপি',
   'ext.copied': 'কপি হয়েছে।',
   'ext.state.starting': 'ইনস্টল করা · চালু হচ্ছে…',
+  'ext.noRuntimeBuild':
+      'এই APK এক্সটেনশন রানটাইম ছাড়া তৈরি হয়েছে, তাই এক্সটেনশন ইনস্টল করা যাবে না। GitHub Actions এ CloudStream library বিল্ড হয়নি: Actions লগে ব্যর্থ "Build release APK" ধাপটি খুলুন।',
+  'ext.compat.noRuntimeBuild': 'এই APK তে এক্সটেনশন রানটাইম নেই',
 };

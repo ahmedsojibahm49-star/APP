@@ -23,8 +23,8 @@ class NativeExtensionHost implements ExtensionHost {
       if (raw == null || raw.isEmpty) return null;
       return jsonDecode(raw);
     } on MissingPluginException {
-      throw const ExtensionException(ExtensionError.unsupportedPlatform,
-          'The native extension runtime is not part of this build.');
+      throw const ExtensionException(
+          ExtensionError.unsupportedPlatform, runtimeMissingMessage);
     } on PlatformException catch (e) {
       throw ExtensionException(
         switch (e.code) {
@@ -57,8 +57,31 @@ class NativeExtensionHost implements ExtensionHost {
         unavailableReason: j['reason'] as String?,
       );
     } on ExtensionException catch (e) {
-      return HostInfo(available: false, unavailableReason: e.message);
+      // Channel missing: ask the always-present updater channel WHY, so the
+      // screen can say "not in this build" vs "failed to start: <reason>".
+      final startup = await _startupStatus();
+      return HostInfo(
+        available: false,
+        unavailableReason: startup ?? e.message,
+      );
     }
+  }
+
+  static const MethodChannel _statusChannel = MethodChannel('streambox/update');
+
+  /// A readable failure reason, or null when the runtime is simply absent
+  /// from this APK (or the status cannot be read).
+  Future<String?> _startupStatus() async {
+    try {
+      final s = await _statusChannel.invokeMethod<String>('cs3Status');
+      if (s != null && s.startsWith('failed:')) {
+        return 'The extension runtime failed to start on this phone: '
+            '${s.substring(7).trim()}';
+      }
+    } on Object {
+      // Older native side without the status call.
+    }
+    return null;
   }
 
   @override

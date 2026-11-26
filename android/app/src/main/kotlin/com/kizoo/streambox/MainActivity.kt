@@ -27,11 +27,23 @@ class MainActivity : FlutterActivity() {
                 android.content.Context::class.java,
                 io.flutter.plugin.common.BinaryMessenger::class.java,
             ).newInstance(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+            cs3Status = "ok"
         } catch (_: ClassNotFoundException) {
-            // Default build: no CloudStream runtime.
-        } catch (_: Throwable) {
-            // A broken optional runtime must never crash app start.
+            // This APK was built without the CloudStream runtime.
+            cs3Status = "absent"
+        } catch (t: Throwable) {
+            // A broken optional runtime must never crash app start — but the
+            // reason is kept so the Extensions screen can show it instead of
+            // a vague "not supported on this device".
+            val root = generateSequence(t) { it.cause }.last()
+            cs3Status = "failed: ${root.javaClass.name}: ${root.message ?: ""}".take(400)
         }
+    }
+
+    companion object {
+        /** "ok" | "absent" (not in this APK) | "failed: <reason>". Read by [AppUpdater]. */
+        @Volatile
+        var cs3Status: String = "unknown"
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

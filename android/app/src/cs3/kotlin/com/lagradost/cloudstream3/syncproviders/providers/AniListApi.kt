@@ -1,7 +1,5 @@
 package com.lagradost.cloudstream3.syncproviders.providers
 
-import com.fasterxml.jackson.annotation.JsonProperty
-
 /**
  * JSON data holders that plugins embed in their OWN response models (for
  * example Anichi parses AniList "recommendations" into these). Without the
@@ -11,13 +9,15 @@ import com.fasterxml.jackson.annotation.JsonProperty
  *
  * Only the data shapes are provided — the AniList account/sync client
  * itself does not exist in StreamBox. Property names match the real
- * classes (they are the AniList GraphQL field names); the `$stable` fields
- * exist because plugins compiled with Jetpack Compose read them.
+ * classes (they ARE the AniList GraphQL field names, which is all Jackson's
+ * Kotlin module needs — no annotations, so this file has no compile-time
+ * dependency beyond the standard library); the `$stable` fields exist
+ * because plugins compiled with Jetpack Compose read them.
  */
 class AniListApi {
     data class Title(
-        @JsonProperty("english") val english: String? = null,
-        @JsonProperty("romaji") val romaji: String? = null,
+        val english: String? = null,
+        val romaji: String? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -25,9 +25,9 @@ class AniListApi {
     }
 
     data class CoverImage(
-        @JsonProperty("medium") val medium: String? = null,
-        @JsonProperty("large") val large: String? = null,
-        @JsonProperty("extraLarge") val extraLarge: String? = null,
+        val medium: String? = null,
+        val large: String? = null,
+        val extraLarge: String? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -35,10 +35,10 @@ class AniListApi {
     }
 
     data class MediaTitle(
-        @JsonProperty("romaji") val romaji: String? = null,
-        @JsonProperty("english") val english: String? = null,
-        @JsonProperty("native") val native: String? = null,
-        @JsonProperty("userPreferred") val userPreferred: String? = null,
+        val romaji: String? = null,
+        val english: String? = null,
+        val native: String? = null,
+        val userPreferred: String? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -46,10 +46,10 @@ class AniListApi {
     }
 
     data class MediaCoverImage(
-        @JsonProperty("extraLarge") val extraLarge: String? = null,
-        @JsonProperty("large") val large: String? = null,
-        @JsonProperty("medium") val medium: String? = null,
-        @JsonProperty("color") val color: String? = null,
+        val extraLarge: String? = null,
+        val large: String? = null,
+        val medium: String? = null,
+        val color: String? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -57,11 +57,11 @@ class AniListApi {
     }
 
     data class LikePageInfo(
-        @JsonProperty("total") val total: Int? = null,
-        @JsonProperty("currentPage") val currentPage: Int? = null,
-        @JsonProperty("lastPage") val lastPage: Int? = null,
-        @JsonProperty("perPage") val perPage: Int? = null,
-        @JsonProperty("hasNextPage") val hasNextPage: Boolean? = null,
+        val total: Int? = null,
+        val currentPage: Int? = null,
+        val lastPage: Int? = null,
+        val perPage: Int? = null,
+        val hasNextPage: Boolean? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -69,8 +69,8 @@ class AniListApi {
     }
 
     data class SeasonNextAiringEpisode(
-        @JsonProperty("episode") val episode: Int? = null,
-        @JsonProperty("timeUntilAiring") val timeUntilAiring: Int? = null,
+        val episode: Int? = null,
+        val timeUntilAiring: Int? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -78,9 +78,9 @@ class AniListApi {
     }
 
     data class RecommendedMedia(
-        @JsonProperty("id") val id: Int? = null,
-        @JsonProperty("title") val title: MediaTitle? = null,
-        @JsonProperty("coverImage") val coverImage: MediaCoverImage? = null,
+        val id: Int? = null,
+        val title: MediaTitle? = null,
+        val coverImage: MediaCoverImage? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -88,7 +88,7 @@ class AniListApi {
     }
 
     data class Recommendation(
-        @JsonProperty("mediaRecommendation") val mediaRecommendation: RecommendedMedia? = null,
+        val mediaRecommendation: RecommendedMedia? = null,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -96,7 +96,7 @@ class AniListApi {
     }
 
     data class RecommendationEdge(
-        @JsonProperty("node") val node: Recommendation,
+        val node: Recommendation,
     ) {
         companion object {
             const val `$stable`: Int = 0
@@ -104,8 +104,8 @@ class AniListApi {
     }
 
     data class RecommendationConnection(
-        @JsonProperty("edges") val edges: List<RecommendationEdge> = emptyList(),
-        @JsonProperty("nodes") val nodes: List<Recommendation> = emptyList(),
+        val edges: List<RecommendationEdge> = emptyList(),
+        val nodes: List<Recommendation> = emptyList(),
     ) {
         companion object {
             const val `$stable`: Int = 0

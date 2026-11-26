@@ -276,8 +276,10 @@ class _ExtensionsScreenState extends ConsumerState<ExtensionsScreen> {
                   border: Border.all(color: palette.border),
                 ),
                 child: Text(
-                  '${tr(context, 'ext.noRuntime')}\n'
-                  '${hostInfo.unavailableReason ?? ''}',
+                  hostInfo.runtimeMissing
+                      ? tr(context, 'ext.noRuntimeBuild')
+                      : '${tr(context, 'ext.noRuntime')}\n'
+                          '${hostInfo.unavailableReason ?? ''}',
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: palette.muted),
                 ),
@@ -411,7 +413,8 @@ class ExtensionCard extends ConsumerWidget {
     }
 
     final running = manager.isLoadedInHost(item.internalName);
-    final status = _statusText(context, progress, running);
+    final status = _statusText(
+        context, progress, running, manager.hostInfo.runtimeMissing);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -512,8 +515,8 @@ class ExtensionCard extends ConsumerWidget {
     );
   }
 
-  String _statusText(
-      BuildContext context, InstallProgress? progress, bool running) {
+  String _statusText(BuildContext context, InstallProgress? progress,
+      bool running, bool runtimeMissing) {
     if (progress != null) {
       return switch (progress.phase) {
         InstallPhase.downloading => progress.fraction == null
@@ -540,8 +543,9 @@ class ExtensionCard extends ConsumerWidget {
     }
     return switch (item.compatibility) {
       Compatibility.compatible => tr(context, 'ext.state.notInstalled'),
-      Compatibility.unsupportedPlatform =>
-        tr(context, 'ext.compat.unsupportedPlatform'),
+      Compatibility.unsupportedPlatform => runtimeMissing
+          ? tr(context, 'ext.compat.noRuntimeBuild')
+          : tr(context, 'ext.compat.unsupportedPlatform'),
       Compatibility.apiMismatch => tr(context, 'ext.compat.apiMismatch'),
       Compatibility.unsupportedPackage =>
         tr(context, 'ext.compat.unsupportedPackage'),
@@ -629,8 +633,9 @@ class ExtensionDetailsSheet extends ConsumerWidget {
 
     final compatText = switch (item?.compatibility) {
       Compatibility.compatible => tr(context, 'ext.compat.ok'),
-      Compatibility.unsupportedPlatform =>
-        tr(context, 'ext.compat.unsupportedPlatform'),
+      Compatibility.unsupportedPlatform => manager.hostInfo.runtimeMissing
+          ? tr(context, 'ext.compat.noRuntimeBuild')
+          : tr(context, 'ext.compat.unsupportedPlatform'),
       Compatibility.apiMismatch => tr(context, 'ext.compat.apiMismatch'),
       Compatibility.unsupportedPackage =>
         tr(context, 'ext.compat.unsupportedPackage'),

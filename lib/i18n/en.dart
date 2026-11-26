@@ -531,4 +531,7 @@ const Map<String, String> enStrings = {
   'ext.copy': 'Copy',
   'ext.copied': 'Copied.',
   'ext.state.starting': 'Installed · starting…',
+  'ext.noRuntimeBuild':
+      'This APK was built WITHOUT the extension runtime, so extensions cannot be installed. The CloudStream library did not build in GitHub Actions: open the failed "Build release APK" step in the Actions log.',
+  'ext.compat.noRuntimeBuild': 'This APK has no extension runtime',
 };

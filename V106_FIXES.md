@@ -174,3 +174,18 @@ uses a Bold icon or a decorative one.
   reports whether state is on disk or in memory only.
 * Not available: manga/manhwa from extensions. CloudStream extensions are
   video-only; manga/manhwa still come from JSON catalogs.
+
+## "Not supported on this device" on an Oppo A12 (Android 9)
+
+The Oppo A12 / Android 9 is fine (API 28; an earlier build ran plugins on it).
+That label means the app asked the native runtime and got nothing: this APK
+was built without it, or it failed to start. Both are now explicit:
+
+* the Extensions screen says which one — "built WITHOUT the extension
+  runtime" or "failed to start on this phone: <exact exception>";
+* CI prints `Extension runtime: CloudStream library v4.9.1 | v4.8.0 | NONE`
+  in the job summary, names the artifact `streambox-apk-WITHOUT-EXTENSIONS`
+  when there is none, and REFUSES to publish a release tag without it;
+* the AniList shims no longer need any Jackson-annotation import (one fewer
+  thing that could break the Gradle build), and `minSdk` is held at 23+ for
+  the runtime build.

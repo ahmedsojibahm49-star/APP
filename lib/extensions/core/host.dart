@@ -92,6 +92,10 @@ abstract class PackageStorage {
 
 // ------------------------------------------------------------------ host
 
+/// Reason text used when this APK was built without the native runtime.
+const String runtimeMissingMessage =
+    'The native extension runtime is not part of this build.';
+
 /// What the native runtime can do on this device.
 class HostInfo {
   const HostInfo({
@@ -107,6 +111,10 @@ class HostInfo {
   final Set<int> apiVersions;
   final String runtime;
   final String? unavailableReason;
+
+  /// True when the APK itself lacks the runtime (the CloudStream library did
+  /// not build in CI) — different from "this phone cannot run it".
+  bool get runtimeMissing => unavailableReason == runtimeMissingMessage;
 
   static const HostInfo unavailable = HostInfo(
     available: false,
